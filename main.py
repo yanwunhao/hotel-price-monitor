@@ -5,6 +5,10 @@ from utils.deepseek import parse_table_to_markdown
 
 load_dotenv(override=True)
 
+hotel_list = ["yuzawa-grand.ja.html", "yuzawa-toei-hotel.ja.html", "futaba.ja.html"]
+
+# rest: 越後湯沢温泉さくら亭, Takinoyu
+
 # Example usage
 hotel_path = "yuzawa-toei-hotel.ja.html"
 today = datetime.now()
