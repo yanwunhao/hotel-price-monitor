@@ -14,10 +14,8 @@ def fetch_hotel_table(hotel_path: str, checkin: str, checkout: str, wait_seconds
         wait_seconds: Seconds to wait for page to load (default: 10)
 
     Returns:
-        BeautifulSoup: Cleaned table element containing "本日の料金" (today's price)
-
-    Raises:
-        ValueError: If table with "本日の料金" is not found
+        BeautifulSoup | None: Cleaned table element containing "本日の料金" (today's price),
+                              or None if no rooms available
     """
     # Initialize Chrome driver
     driver = webdriver.Chrome()
@@ -51,7 +49,7 @@ def fetch_hotel_table(hotel_path: str, checkin: str, checkout: str, wait_seconds
                 break
 
         if not target_table:
-            raise ValueError("Table with '本日の料金' not found!")
+            return None  # No rooms available
 
         # Create a clean copy of the table without style attributes
         clean_table = target_table.__copy__()

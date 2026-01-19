@@ -9,29 +9,51 @@ hotel_list = ["yuzawa-grand.ja.html", "yuzawa-toei-hotel.ja.html", "futaba.ja.ht
 
 # rest: 越後湯沢温泉さくら亭, Takinoyu
 
-# Example usage
-hotel_path = "yuzawa-toei-hotel.ja.html"
-today = datetime.now()
-checkin = today.strftime("%Y-%m-%d")
-checkout = (today + timedelta(days=1)).strftime("%Y-%m-%d")
-wait_seconds = 20
 
-try:
-    # Fetch and clean the hotel pricing table
-    print(f"Fetching hotel table for {hotel_path}...")
-    clean_table = fetch_hotel_table(hotel_path, checkin, checkout, wait_seconds)
+def fetch_hotel_prices(
+    hotel_path: str, start_date: datetime, end_date: datetime, wait_seconds: int = 20
+):
+    """
+    Fetch hotel prices for a date range.
 
-    # Parse table to Markdown using DeepSeek
-    print("\nParsing table to Markdown using DeepSeek...")
-    markdown_table = parse_table_to_markdown(clean_table)
+    Args:
+        hotel_path: The hotel path after /jp/ (e.g., "yuzawa-grand.ja.html")
+        start_date: Start date (inclusive)
+        end_date: End date (exclusive)
+        wait_seconds: Seconds to wait for page to load (default: 20)
+    """
+    current_date = start_date
+    while current_date <= end_date:
+        checkin = current_date.strftime("%Y-%m-%d")
+        checkout = (current_date + timedelta(days=1)).strftime("%Y-%m-%d")
 
-    print("\n" + "=" * 80)
-    print("MARKDOWN TABLE (Parsed by DeepSeek):")
-    print("=" * 80)
-    print(markdown_table)
-    print("=" * 80)
+        print(f"\n{'=' * 80}")
+        print(f"Date: {checkin}")
+        print(f"{'=' * 80}")
 
-except ValueError as e:
-    print(f"Error: {e}")
-except Exception as e:
-    print(f"Unexpected error: {e}")
+        try:
+            print(f"Fetching hotel table for {hotel_path}...")
+            clean_table = fetch_hotel_table(hotel_path, checkin, checkout, wait_seconds)
+
+            if clean_table is None:
+                print("No vacancy, skipping...")
+            else:
+                print("\nParsing table to Markdown using DeepSeek...")
+                markdown_table = parse_table_to_markdown(clean_table)
+
+                print("\nMARKDOWN TABLE (Parsed by DeepSeek):")
+                print(markdown_table)
+
+        except Exception as e:
+            print(f"Unexpected error: {e}")
+
+        current_date += timedelta(days=1)
+
+
+if __name__ == "__main__":
+    fetch_hotel_prices(
+        hotel_path="yuzawa-grand.ja.html",
+        start_date=datetime(2026, 2, 25),
+        end_date=datetime(2026, 2, 27),
+        wait_seconds=20,
+    )
