@@ -51,31 +51,28 @@ def fetch_hotel_table(hotel_path: str, checkin: str, checkout: str, wait_seconds
         if not target_table:
             return None  # No rooms available
 
-        # Create a clean copy of the table without style attributes
-        clean_table = target_table.__copy__()
+        # Create a deep copy of the table
+        clean_table = BeautifulSoup(str(target_table), "html.parser").find("table")
 
-        # Remove all style attributes from all elements
+        # Remove hidden elements, scripts, styles, SVGs, etc.
+        for element in clean_table.find_all(["script", "style", "svg", "noscript", "iframe"]):
+            element.decompose()
+
+        # Remove elements with hidden attribute or display:none
+        to_remove = []
         for element in clean_table.find_all(True):
-            # Remove style attribute
-            if element.has_attr("style"):
-                del element["style"]
-            # Remove class attribute
-            if element.has_attr("class"):
-                del element["class"]
-            # Remove inline styling attributes
-            attrs_to_remove = [
-                "width",
-                "height",
-                "bgcolor",
-                "align",
-                "valign",
-                "border",
-                "cellpadding",
-                "cellspacing",
-            ]
-            for attr in attrs_to_remove:
-                if element.has_attr(attr):
-                    del element[attr]
+            if element.has_attr("hidden"):
+                to_remove.append(element)
+                continue
+            style = element.get("style", "") or ""
+            if "display:none" in style.replace(" ", "") or "display: none" in style:
+                to_remove.append(element)
+        for element in to_remove:
+            element.decompose()
+
+        # Remove all attributes from remaining elements to reduce size
+        for element in clean_table.find_all(True):
+            element.attrs = {}
 
         return clean_table
 
